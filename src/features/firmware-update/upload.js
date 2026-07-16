@@ -20,17 +20,19 @@ function* runSingleFirmwareUpdate(
   },
   options
 ) {
-  const { target, blob } = payload ?? {};
+  const { target, blob, format, manifest } = payload ?? {};
   yield call(
     messageHub.execute.uploadFirmware,
-    { objectId, target, blob },
+    { objectId, target, blob, format, manifest },
     options
   );
 }
 
 const spec = {
   executor: runSingleFirmwareUpdate,
-  scope: JobScope.COMPATIBLE,
+  // Keep production rollout serialized: one explicitly selected canary UAV
+  // per operation. Fleet batching needs a separate, persistent campaign UI.
+  scope: JobScope.SINGLE,
   title: 'Update firmware',
   type: JOB_TYPE,
 };

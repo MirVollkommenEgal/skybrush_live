@@ -1,6 +1,7 @@
 import NavigateBefore from '@mui/icons-material/NavigateBefore';
 import NavigateNext from '@mui/icons-material/NavigateNext';
 import SaveAlt from '@mui/icons-material/SaveAlt';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
@@ -12,6 +13,7 @@ import { Base64 } from 'js-base64';
 import memoizee from 'memoizee';
 import PropTypes from 'prop-types';
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
 
 import { BackgroundHint, DraggableDialog } from '@skybrush/mui-components';
@@ -19,17 +21,34 @@ import { BackgroundHint, DraggableDialog } from '@skybrush/mui-components';
 import AsyncGuard from '~/components/AsyncGuard';
 import FileButton from '~/components/FileButton';
 import { selectableListOf } from '~/components/helpers/lists';
-import { openUploadDialogForJob } from '~/features/upload/slice';
+import {
+  openUploadDialogForJob,
+  setUploadAutoRetry,
+} from '~/features/upload/slice';
 import { useMessageHub } from '~/hooks';
-import { readFileAsArrayBuffer } from '~/utils/files';
 import { formatData } from '~/utils/formatting';
 
 import { JOB_TYPE } from './constants';
 import { isFirmwareUpdateSetupDialogOpen } from './selectors';
 import {
+  FirmwareReleaseValidationError,
+  validateFirmwareRelease,
+} from './manifest';
+import {
   hideFirmwareUpdateSetupDialog,
   showFirmwareUpdateSetupDialog,
 } from './slice';
+
+const NoFirmwareUpdateTargetsHint = () => {
+  const { t } = useTranslation();
+  return (
+    <BackgroundHint
+      header={t('firmwareUpdate.noTargets')}
+      text={t('firmwareUpdate.enableServerSupport')}
+      style={{ minHeight: 200 }}
+    />
+  );
+};
 
 const FirmwareUpdateTargetSelectorPresentation = selectableListOf(
   ({ name, id }, { onItemSelected }) => (
@@ -40,27 +59,24 @@ const FirmwareUpdateTargetSelectorPresentation = selectableListOf(
   {
     dataProvider: 'items',
     displayName: 'FirmwareUpdateTargetSelectorPresentation',
-    backgroundHint: (
-      <BackgroundHint
-        header='No firmware update targets'
-        text='Enable firmware update support in the server first'
-        style={{ minHeight: 200 }}
-      />
-    ),
+    backgroundHint: <NoFirmwareUpdateTargetsHint />,
   }
 );
 
-const FirmwareUpdateTargetSelector = ({ getTargets, ...rest }) => (
-  <AsyncGuard
-    func={getTargets}
-    errorMessage='Error while loading firmware update targets from server'
-    loadingMessage='Retrieving firmware update targets...'
-  >
-    {(items) => (
-      <FirmwareUpdateTargetSelectorPresentation items={items} {...rest} />
-    )}
-  </AsyncGuard>
-);
+const FirmwareUpdateTargetSelector = ({ getTargets, ...rest }) => {
+  const { t } = useTranslation();
+  return (
+    <AsyncGuard
+      func={getTargets}
+      errorMessage={t('firmwareUpdate.targetLoadingError')}
+      loadingMessage={t('firmwareUpdate.targetLoading')}
+    >
+      {(items) => (
+        <FirmwareUpdateTargetSelectorPresentation items={items} {...rest} />
+      )}
+    </AsyncGuard>
+  );
+};
 
 FirmwareUpdateTargetSelector.propTypes = {
   getTargets: PropTypes.func,
@@ -73,7 +89,11 @@ FirmwareUpdateTargetSelector.propTypes = {
  */
 const FirmwareUpdateSetupDialog = ({ onClose, onNext, open }) => {
   const [target, setTarget] = useState();
-  const [file, setFile] = useState();
+  const [imageFile, setImageFile] = useState();
+  const [manifestFile, setManifestFile] = useState();
+  const [validationError, setValidationError] = useState();
+  const [validating, setValidating] = useState(false);
+  const { t } = useTranslation();
 
   const messageHub = useMessageHub();
   const getTargets = useMemo(
@@ -87,15 +107,40 @@ const FirmwareUpdateSetupDialog = ({ onClose, onNext, open }) => {
 
   const onBack = useCallback(() => {
     setTarget();
-    setFile();
-  }, [setFile, setTarget]);
+    setImageFile();
+    setManifestFile();
+    setValidationError();
+  }, []);
+
+  const validateAndContinue = useCallback(async () => {
+    if (!target || !imageFile || !manifestFile) {
+      return;
+    }
+
+    setValidating(true);
+    setValidationError();
+    try {
+      const release = await validateFirmwareRelease(imageFile, manifestFile);
+      onNext(target, release);
+    } catch (error) {
+      const key =
+        error instanceof FirmwareReleaseValidationError
+          ? error.code
+          : 'unknown';
+      setValidationError(t(`firmwareUpdate.validation.${key}`));
+    } finally {
+      setValidating(false);
+    }
+  }, [imageFile, manifestFile, onNext, t, target]);
 
   return (
     <DraggableDialog
       fullWidth
       open={open}
       maxWidth='sm'
-      title={`Update ${target?.name ?? 'firmware'}`}
+      title={t('firmwareUpdate.title', {
+        target: target?.name ?? t('firmwareUpdate.firmware'),
+      })}
       // TODO: Maybe call `getTargets.clear()` on close instead of `maxAge`
       onClose={onClose}
     >
@@ -108,29 +153,58 @@ const FirmwareUpdateSetupDialog = ({ onClose, onNext, open }) => {
             />
           </Collapse>
           <Collapse in={target !== undefined}>
-            <FileButton style={{ width: '100%' }} onSelected={setFile}>
+            <Alert severity='warning' sx={{ mb: 2 }}>
+              {t('firmwareUpdate.safetyNotice')}
+            </Alert>
+            <FileButton
+              filter={['.abin', '.apj', '.bin']}
+              style={{ width: '100%' }}
+              onSelected={(file) => {
+                setImageFile(file);
+                setValidationError();
+              }}
+            >
               <Box sx={{ textAlign: 'center' }}>
                 <SaveAlt style={{ fontSize: 128 }} />
                 <br />
-                {file === undefined
-                  ? 'Click or drag & drop to select file'
-                  : `${file.name} (${formatData(file.size)})`}
+                {imageFile === undefined
+                  ? t('firmwareUpdate.selectImage')
+                  : `${imageFile.name} (${formatData(imageFile.size)})`}
               </Box>
             </FileButton>
+            <FileButton
+              filter={['.json', 'application/json']}
+              style={{ width: '100%', marginTop: 16 }}
+              onSelected={(file) => {
+                setManifestFile(file);
+                setValidationError();
+              }}
+            >
+              {manifestFile === undefined
+                ? t('firmwareUpdate.selectManifest')
+                : manifestFile.name}
+            </FileButton>
+            {validationError && (
+              <Alert severity='error' sx={{ mt: 2 }}>
+                {validationError}
+              </Alert>
+            )}
           </Collapse>
         </Box>
         <Collapse in={target !== undefined}>
           <DialogActions>
             <Button startIcon={<NavigateBefore />} onClick={onBack}>
-              Back
+              {t('firmwareUpdate.back')}
             </Button>
             <Box sx={{ flex: 1 }} />
             <Button
-              disabled={file === undefined}
+              disabled={!imageFile || !manifestFile || validating}
               endIcon={<NavigateNext />}
-              onClick={() => onNext(target, file)}
+              onClick={validateAndContinue}
             >
-              Next
+              {validating
+                ? t('firmwareUpdate.validating')
+                : t('firmwareUpdate.next')}
             </Button>
           </DialogActions>
         </Collapse>
@@ -154,15 +228,20 @@ export default connect(
   // mapDispatchToProps
   {
     onClose: hideFirmwareUpdateSetupDialog,
-    onNext: (target, file) => async (dispatch) => {
+    onNext: (target, release) => (dispatch) => {
       dispatch(hideFirmwareUpdateSetupDialog());
+      // A firmware operation must never be retried automatically after flash
+      // erasure may have started.
+      dispatch(setUploadAutoRetry(false));
       dispatch(
         openUploadDialogForJob({
           job: {
             type: JOB_TYPE,
             payload: {
               target: target.id,
-              blob: Base64.fromUint8Array(await readFileAsArrayBuffer(file)),
+              blob: Base64.fromUint8Array(release.image),
+              format: release.format,
+              manifest: release.manifest,
             },
           },
           options: {

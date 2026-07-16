@@ -231,9 +231,38 @@
     "uploadShowDataLoading": "Bitte warten, Upload wird durchgeführt…",
     "uploadShowDataStart": "Hier klicken um Upload zu starten"
   },
+  "firmwareUpdate": {
+    "automaticRetryDisabled": "Automatische Wiederholungen sind für Firmware-Updates deaktiviert",
+    "back": "Zurück",
+    "enableServerSupport": "Aktiviere zuerst die serverseitige DPH_FC_088-Firmware-Update-Erweiterung",
+    "firmware": "Firmware",
+    "next": "Weiter",
+    "noTargets": "Keine Firmware-Update-Ziele",
+    "safetyNotice": "Es können nur freigegebene ArduCopter-Releases für DPH_FC_088 hochgeladen werden. Der Server muss Fahrzeugidentität, Board-ID, unbewaffneten und gelandeten Zustand, Akkustand, Remote-CRC und den installierten Git-Hash prüfen, bevor er Erfolg meldet.",
+    "selectImage": "Freigegebenes .abin-, .apj- oder .bin-Image auswählen",
+    "selectManifest": "Zugehöriges Release-Manifest auswählen (.json)",
+    "targetLoading": "Firmware-Update-Ziele werden geladen…",
+    "targetLoadingError": "Fehler beim Laden der Firmware-Update-Ziele vom Server",
+    "title": "{{target}} aktualisieren",
+    "validating": "Wird geprüft…",
+    "validation": {
+      "apjGitMismatch": "Die Git-Identität der APJ-Datei stimmt nicht mit dem Release-Manifest überein.",
+      "emptyImage": "Das Firmware-Image ist leer.",
+      "hashMismatch": "Der SHA-256-Hash der Firmware stimmt nicht mit dem Release-Manifest überein.",
+      "invalidApj": "Die APJ-Datei ist ungültig oder unvollständig.",
+      "invalidImageExtension": "Das Firmware-Image muss eine .abin-, .apj- oder .bin-Datei sein.",
+      "invalidManifestExtension": "Das Release-Manifest muss eine .json-Datei sein.",
+      "invalidManifestJson": "Das Release-Manifest enthält kein gültiges JSON.",
+      "invalidManifestSchema": "Das Release-Manifest ist unvollständig oder enthält ungültige Werte.",
+      "sizeMismatch": "Die Firmware-Größe stimmt nicht mit dem Release-Manifest überein.",
+      "unknown": "Das Firmware-Release konnte nicht geprüft werden.",
+      "wrongBoard": "Dieses Release ist nicht für DPH_FC_088 (APJ-Board-ID 5602) freigegeben."
+    }
+  },
   "toolbox": {
     "averagingInProgress": "{{number}} in Arbeit",
     "coordinateAveraging": "Koordinaten Mittelwert",
+    "firmwareUpdate": "Firmware-Update",
     "licenseInfo": "Lizenz-Informationen",
     "offlineMaps": "Offline-Karten",
     "paramUpload": "Parameter-Upload",

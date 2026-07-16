@@ -22,6 +22,7 @@ import {
 } from '@skybrush/mui-components';
 
 import { Status } from '~/components/semantics';
+import { JOB_TYPE as FIRMWARE_UPDATE_JOB_TYPE } from '~/features/firmware-update/constants';
 import {
   getEstimatedCompletionTime,
   getLastUploadResultByJobType,
@@ -166,6 +167,7 @@ const UploadPanel = ({
   flashFailed,
   hasHiddenTargets,
   hasQueuedItems,
+  jobType,
   lastUploadResult,
   onCancelUpload,
   onDismissLastUploadResult,
@@ -178,6 +180,7 @@ const UploadPanel = ({
 }: UploadPanelProps): React.JSX.Element => {
   const classes = useStyles();
   const { t } = useTranslation();
+  const allowAutoRetry = jobType !== FIRMWARE_UPDATE_JOB_TYPE;
 
   return (
     <>
@@ -190,9 +193,17 @@ const UploadPanel = ({
         <Box sx={{ mt: 1 }}>
           <FormControlLabel
             control={
-              <Checkbox checked={autoRetry} onChange={onToggleAutoRetry} />
+              <Checkbox
+                checked={allowAutoRetry && autoRetry}
+                disabled={!allowAutoRetry}
+                onChange={onToggleAutoRetry}
+              />
             }
-            label={t('uploadPanel.retryFailedAttempts')}
+            label={t(
+              allowAutoRetry
+                ? 'uploadPanel.retryFailedAttempts'
+                : 'firmwareUpdate.automaticRetryDisabled'
+            )}
           />
           <FormControlLabel
             control={

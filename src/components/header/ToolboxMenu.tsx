@@ -89,12 +89,7 @@ const ToolboxMenuPresentation = ({
           <Build />
         </ListItemIcon>
         <ListItemText
-          primary={
-            <>
-              {t('toolbox.firmwareUpdate')}
-              <Pro style={{ verticalAlign: 'middle', marginLeft: 8 }} />
-            </>
-          }
+          primary={t('toolbox.firmwareUpdate')}
           secondary={
             runningUploadJobType === FIRMWARE_UPLOAD_JOB_TYPE &&
             t('toolbox.uploadInProgress')

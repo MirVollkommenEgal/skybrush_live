@@ -13,6 +13,10 @@ import type {
 } from '@skybrush/flockwave-spec';
 
 import { errorToString } from '~/error-handling';
+import type {
+  FirmwareImageFormat,
+  FirmwareReleaseManifest,
+} from '~/features/firmware-update/manifest';
 import type { Coordinate3D } from '~/utils/math';
 
 import {
@@ -417,10 +421,24 @@ export async function uploadFirmware(
     objectId,
     target,
     blob,
-  }: { objectId: string; target: string; blob: string },
+    format,
+    manifest,
+  }: {
+    objectId: string;
+    target: string;
+    blob: string;
+    format: FirmwareImageFormat;
+    manifest: FirmwareReleaseManifest;
+  },
   options: Pick<AsyncOperationOptions, 'onProgress'>
 ) {
-  const command = createFirmwareUploadRequest(objectId, target, blob);
+  const command = createFirmwareUploadRequest(
+    objectId,
+    target,
+    blob,
+    format,
+    manifest
+  );
   try {
     await hub.startAsyncOperationForSingleId(objectId, command, options);
   } catch (error) {

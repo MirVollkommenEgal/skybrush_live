@@ -9,6 +9,16 @@ import type {
   Request_PRMSETMANY,
 } from '@skybrush/flockwave-spec';
 
+import type {
+  FirmwareImageFormat,
+  FirmwareReleaseManifest,
+} from '~/features/firmware-update/manifest';
+
+type FirmwareUploadRequest = Request_FWUPLOAD & {
+  format: FirmwareImageFormat;
+  manifest: FirmwareReleaseManifest;
+};
+
 /**
  * @file Builder functions for commonly used Flockwave messages.
  *
@@ -107,13 +117,17 @@ export function createCommandRequest(
 export function createFirmwareUploadRequest(
   objectIds: string | string[],
   target: string,
-  blob: string
-): Request_FWUPLOAD {
+  blob: string,
+  format: FirmwareImageFormat,
+  manifest: FirmwareReleaseManifest
+): FirmwareUploadRequest {
   return {
     type: 'FW-UPLOAD',
     ids: Array.isArray(objectIds) ? objectIds : [objectIds],
     target: String(target),
     blob,
+    format,
+    manifest,
   };
 }
 
