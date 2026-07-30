@@ -94,6 +94,8 @@ const FirmwareUpdateSetupDialog = ({ onClose, onNext, open }) => {
   const [validationError, setValidationError] = useState();
   const [validating, setValidating] = useState(false);
   const { t } = useTranslation();
+  const manifestRequired =
+    imageFile !== undefined && !imageFile.name.toLowerCase().endsWith('.apj');
 
   const messageHub = useMessageHub();
   const getTargets = useMemo(
@@ -113,7 +115,7 @@ const FirmwareUpdateSetupDialog = ({ onClose, onNext, open }) => {
   }, []);
 
   const validateAndContinue = useCallback(async () => {
-    if (!target || !imageFile || !manifestFile) {
+    if (!target || !imageFile || (manifestRequired && !manifestFile)) {
       return;
     }
 
@@ -131,7 +133,7 @@ const FirmwareUpdateSetupDialog = ({ onClose, onNext, open }) => {
     } finally {
       setValidating(false);
     }
-  }, [imageFile, manifestFile, onNext, t, target]);
+  }, [imageFile, manifestFile, manifestRequired, onNext, t, target]);
 
   return (
     <DraggableDialog
@@ -161,6 +163,7 @@ const FirmwareUpdateSetupDialog = ({ onClose, onNext, open }) => {
               style={{ width: '100%' }}
               onSelected={(file) => {
                 setImageFile(file);
+                setManifestFile();
                 setValidationError();
               }}
             >
@@ -172,18 +175,20 @@ const FirmwareUpdateSetupDialog = ({ onClose, onNext, open }) => {
                   : `${imageFile.name} (${formatData(imageFile.size)})`}
               </Box>
             </FileButton>
-            <FileButton
-              filter={['.json', 'application/json']}
-              style={{ width: '100%', marginTop: 16 }}
-              onSelected={(file) => {
-                setManifestFile(file);
-                setValidationError();
-              }}
-            >
-              {manifestFile === undefined
-                ? t('firmwareUpdate.selectManifest')
-                : manifestFile.name}
-            </FileButton>
+            {manifestRequired && (
+              <FileButton
+                filter={['.json', 'application/json']}
+                style={{ width: '100%', marginTop: 16 }}
+                onSelected={(file) => {
+                  setManifestFile(file);
+                  setValidationError();
+                }}
+              >
+                {manifestFile === undefined
+                  ? t('firmwareUpdate.selectManifest')
+                  : manifestFile.name}
+              </FileButton>
+            )}
             {validationError && (
               <Alert severity='error' sx={{ mt: 2 }}>
                 {validationError}
@@ -198,7 +203,9 @@ const FirmwareUpdateSetupDialog = ({ onClose, onNext, open }) => {
             </Button>
             <Box sx={{ flex: 1 }} />
             <Button
-              disabled={!imageFile || !manifestFile || validating}
+              disabled={
+                !imageFile || (manifestRequired && !manifestFile) || validating
+              }
               endIcon={<NavigateNext />}
               onClick={validateAndContinue}
             >

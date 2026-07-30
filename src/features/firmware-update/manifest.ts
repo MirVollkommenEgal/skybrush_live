@@ -23,7 +23,7 @@ type FirmwareReleaseManifestCandidate = Omit<
 export type ValidatedFirmwareRelease = {
   format: FirmwareImageFormat;
   image: ArrayBuffer;
-  manifest: FirmwareReleaseManifest;
+  manifest?: FirmwareReleaseManifest;
 };
 
 export type FirmwareImageFormat = 'abin' | 'apj' | 'bin';
@@ -56,6 +56,9 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const isHex = (value: unknown, length: number): value is string =>
   typeof value === 'string' &&
   new RegExp(`^[a-fA-F0-9]{${length}}$`).test(value);
+
+const isGitIdentity = (value: unknown): value is string =>
+  isHex(value, 8) || isHex(value, 40);
 
 const isValidManifest = (
   value: unknown
@@ -93,7 +96,7 @@ const getFirmwareImageFormat = (filename: string): FirmwareImageFormat => {
 
 const validateApj = (
   image: ArrayBuffer,
-  manifest: FirmwareReleaseManifestCandidate
+  manifest?: FirmwareReleaseManifestCandidate
 ): void => {
   let apj: unknown;
   try {
@@ -110,7 +113,8 @@ const validateApj = (
     apj.image.length === 0 ||
     typeof apj.image_size !== 'number' ||
     !Number.isSafeInteger(apj.image_size) ||
-    apj.image_size <= 0
+    apj.image_size <= 0 ||
+    (!manifest && !isGitIdentity(apj.git_identity))
   ) {
     throw new FirmwareReleaseValidationError(
       isRecord(apj) &&
@@ -122,8 +126,10 @@ const validateApj = (
   }
 
   if (
+    manifest &&
     typeof apj.git_identity === 'string' &&
-    apj.git_identity.toLowerCase() !== manifest.gitSha.toLowerCase()
+    apj.git_identity.toLowerCase() !==
+      manifest.gitSha.slice(0, apj.git_identity.length).toLowerCase()
   ) {
     throw new FirmwareReleaseValidationError('apjGitMismatch');
   }
@@ -131,9 +137,23 @@ const validateApj = (
 
 export const validateFirmwareRelease = async (
   imageFile: File,
-  manifestFile: File
+  manifestFile?: File
 ): Promise<ValidatedFirmwareRelease> => {
   const format = getFirmwareImageFormat(imageFile.name);
+
+  const image = await imageFile.arrayBuffer();
+  if (image.byteLength === 0) {
+    throw new FirmwareReleaseValidationError('emptyImage');
+  }
+
+  if (format === 'apj' && !manifestFile) {
+    validateApj(image);
+    return { format, image };
+  }
+
+  if (!manifestFile) {
+    throw new FirmwareReleaseValidationError('invalidManifestSchema');
+  }
 
   if (!manifestFile.name.toLowerCase().endsWith('.json')) {
     throw new FirmwareReleaseValidationError('invalidManifestExtension');
@@ -152,11 +172,6 @@ export const validateFirmwareRelease = async (
 
   if (parsedManifest.apjBoardId !== DPH_FC_088_BOARD_ID) {
     throw new FirmwareReleaseValidationError('wrongBoard');
-  }
-
-  const image = await imageFile.arrayBuffer();
-  if (image.byteLength === 0) {
-    throw new FirmwareReleaseValidationError('emptyImage');
   }
 
   if (format === 'abin') {

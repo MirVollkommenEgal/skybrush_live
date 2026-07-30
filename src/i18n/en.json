@@ -260,6 +260,34 @@
       "warningsAndErrors": "Warn/Err"
     }
   },
+  "firmwareUpdate": {
+    "automaticRetryDisabled": "Automatic retry is disabled for firmware updates",
+    "back": "Back",
+    "enableServerSupport": "Enable the server-side DPH_FC_088 firmware update extension first",
+    "firmware": "firmware",
+    "next": "Next",
+    "noTargets": "No firmware update targets",
+    "safetyNotice": "Only approved DPH_FC_088 ArduCopter releases can be uploaded. The server must verify vehicle identity, board ID, disarmed and landed state, battery level, remote CRC and the installed Git hash before reporting success.",
+    "selectImage": "Select the approved .abin, .apj or .bin image",
+    "selectManifest": "Select the matching release manifest (.json)",
+    "targetLoading": "Retrieving firmware update targets…",
+    "targetLoadingError": "Error while loading firmware update targets from the server",
+    "title": "Update {{target}}",
+    "validating": "Validating…",
+    "validation": {
+      "apjGitMismatch": "The APJ Git identity does not match the release manifest.",
+      "emptyImage": "The firmware image is empty.",
+      "hashMismatch": "The firmware SHA-256 does not match the release manifest.",
+      "invalidApj": "The APJ file is invalid or incomplete.",
+      "invalidImageExtension": "The firmware image must be an .abin, .apj or .bin file.",
+      "invalidManifestExtension": "The release manifest must be a .json file.",
+      "invalidManifestJson": "The release manifest is not valid JSON.",
+      "invalidManifestSchema": "The release manifest is incomplete or contains invalid values.",
+      "sizeMismatch": "The firmware size does not match the release manifest.",
+      "unknown": "The firmware release could not be validated.",
+      "wrongBoard": "This release is not approved for DPH_FC_088 (APJ board ID 5602)."
+    }
+  },
   "fitAllFeaturesButton": {
     "fitAllDrones": "Fit all drones",
     "fitAllFeatures": "Fit all features"
@@ -1255,34 +1283,6 @@
     "specifiedByAbsoluteCompassDirection": "Specified by absolute compass direction",
     "specifiedRelativeToShowOrientation": "Specified relative to show orientation",
     "unspecified": "Unspecified"
-  },
-  "firmwareUpdate": {
-    "automaticRetryDisabled": "Automatic retry is disabled for firmware updates",
-    "back": "Back",
-    "enableServerSupport": "Enable the server-side DPH_FC_088 firmware update extension first",
-    "firmware": "firmware",
-    "next": "Next",
-    "noTargets": "No firmware update targets",
-    "safetyNotice": "Only approved DPH_FC_088 ArduCopter releases can be uploaded. The server must verify vehicle identity, board ID, disarmed and landed state, battery level, remote CRC and the installed Git hash before reporting success.",
-    "selectImage": "Select the approved .abin, .apj or .bin image",
-    "selectManifest": "Select the matching release manifest (.json)",
-    "targetLoading": "Retrieving firmware update targets…",
-    "targetLoadingError": "Error while loading firmware update targets from the server",
-    "title": "Update {{target}}",
-    "validating": "Validating…",
-    "validation": {
-      "apjGitMismatch": "The APJ Git identity does not match the release manifest.",
-      "emptyImage": "The firmware image is empty.",
-      "hashMismatch": "The firmware SHA-256 does not match the release manifest.",
-      "invalidApj": "The APJ file is invalid or incomplete.",
-      "invalidImageExtension": "The firmware image must be an .abin, .apj or .bin file.",
-      "invalidManifestExtension": "The release manifest must be a .json file.",
-      "invalidManifestJson": "The release manifest is not valid JSON.",
-      "invalidManifestSchema": "The release manifest is incomplete or contains invalid values.",
-      "sizeMismatch": "The firmware size does not match the release manifest.",
-      "unknown": "The firmware release could not be validated.",
-      "wrongBoard": "This release is not approved for DPH_FC_088 (APJ board ID 5602)."
-    }
   },
   "toolbox": {
     "averagingInProgress": "{{number}} in progress",

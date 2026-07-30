@@ -428,7 +428,7 @@ export async function uploadFirmware(
     target: string;
     blob: string;
     format: FirmwareImageFormat;
-    manifest: FirmwareReleaseManifest;
+    manifest?: FirmwareReleaseManifest;
   },
   options: Pick<AsyncOperationOptions, 'onProgress'>
 ) {

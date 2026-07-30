@@ -16,7 +16,7 @@ import type {
 
 type FirmwareUploadRequest = Request_FWUPLOAD & {
   format: FirmwareImageFormat;
-  manifest: FirmwareReleaseManifest;
+  manifest?: FirmwareReleaseManifest;
 };
 
 /**
@@ -119,16 +119,19 @@ export function createFirmwareUploadRequest(
   target: string,
   blob: string,
   format: FirmwareImageFormat,
-  manifest: FirmwareReleaseManifest
+  manifest?: FirmwareReleaseManifest
 ): FirmwareUploadRequest {
-  return {
+  const request: FirmwareUploadRequest = {
     type: 'FW-UPLOAD',
     ids: Array.isArray(objectIds) ? objectIds : [objectIds],
     target: String(target),
     blob,
     format,
-    manifest,
   };
+  if (manifest) {
+    request.manifest = manifest;
+  }
+  return request;
 }
 
 /**
