@@ -30,9 +30,7 @@ function* runSingleFirmwareUpdate(
 
 const spec = {
   executor: runSingleFirmwareUpdate,
-  // Keep production rollout serialized: one explicitly selected canary UAV
-  // per operation. Fleet batching needs a separate, persistent campaign UI.
-  scope: JobScope.SINGLE,
+  scope: JobScope.COMPATIBLE,
   title: 'Update firmware',
   type: JOB_TYPE,
 };

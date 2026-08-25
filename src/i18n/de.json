@@ -179,6 +179,7 @@
       "fullCharge": "Vollständig aufgeladen",
       "gone": "Markiere Drohnen als verloren nach",
       "lowTreshold": "Niederer Schwellenwert",
+      "maxUploadConcurrency": "Maximale Anzahl gleichzeitiger Uploads",
       "missionSetup": "Missions Einstellungen",
       "missionSetupDescription": "Wird vor Einsätzen mit mehreren Drohnen verwendet, um zu überprüfen, ob sich jede Drohne an ihrer vorgeschriebenen Startposition befindet und korrekt ausgerichtet ist.",
       "warn": "Warnung bei Drohnen, die nicht gesehen wurden für mindestens"
