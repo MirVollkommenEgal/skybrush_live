@@ -360,6 +360,18 @@ export async function getRTKStatus(hub) {
 }
 
 /**
+ * Returns the qualification and failover state of the redundant RTK guard.
+ */
+export async function getRTKGuardStatus(hub) {
+  const response = await hub.sendMessage({ type: 'X-RTK-GUARD-STAT' });
+  if (response.body && response.body.type === 'X-RTK-GUARD-STAT') {
+    return response.body.available === false ? null : response.body;
+  }
+
+  throw new Error('Unexpected response for RTK guard status query');
+}
+
+/**
  * Returns the currently selected RTK data source ID.
  *
  * @return {Promise<string | null>}
@@ -483,6 +495,7 @@ export class QueryHandler {
     getMissionTypeSchemas,
     getPreflightStatus,
     getRTKPresets,
+    getRTKGuardStatus,
     getRTKStatus,
     getRTKSurveySettings,
     getSelectedRTKPresetId,

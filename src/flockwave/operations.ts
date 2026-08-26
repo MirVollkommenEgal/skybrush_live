@@ -7,6 +7,7 @@ import type {
   DroneLightsConfiguration,
   DroneShowConfiguration,
   Response_ACKNAK,
+  Response_EXTLOAD,
   Response_EXTRELOAD,
   Response_EXTSETCFG,
   RTKSurveySettings,
@@ -77,6 +78,25 @@ export async function reloadExtension(
 
   const status = extractResponseForId(response, name, {
     error: `Failed to reload extension: ${name}`,
+  });
+
+  return Boolean(status);
+}
+
+/** Loads a server extension that is currently available but not running. */
+export async function loadExtension(
+  hub: MessageHub,
+  name: string
+): Promise<boolean> {
+  validateExtensionName(name);
+
+  const response: Message<Response_EXTLOAD> = await hub.sendMessage({
+    type: 'EXT-LOAD',
+    ids: [name],
+  });
+
+  const status = extractResponseForId(response, name, {
+    error: `Failed to load extension: ${name}`,
   });
 
   return Boolean(status);
@@ -534,6 +554,7 @@ export async function planMission(
 
 const _operations = {
   configureExtension,
+  loadExtension,
   planMission,
   reloadExtension,
   resetUAV,

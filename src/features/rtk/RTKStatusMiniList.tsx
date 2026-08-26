@@ -12,10 +12,11 @@ import type { RootState } from '~/store/reducers';
 
 import {
   getOverallRTKStatus,
+  getRTKGuardStatus,
   getSatelliteIds,
   getSurveyStatus,
 } from './selectors';
-import { RTKCorrectionStatus } from './types';
+import { RTKCorrectionStatus, type RTKGuardStatus } from './types';
 import {
   describeRTKStatus,
   formatSurveyAccuracy,
@@ -56,6 +57,16 @@ const gnssSystems: Record<string, GNSSSystemDescription> = {
 
 const gnssSystemOrder = ['G', 'R', 'E', 'C', 'other'];
 
+const getGuardIconPreset = (state: string): 'success' | 'warning' | 'error' => {
+  if (state === 'GOOD' || state === 'READY' || state === 'CONSISTENT') {
+    return 'success';
+  }
+  if (state === 'DEGRADED' || state === 'NOT_COMPARABLE') {
+    return 'warning';
+  }
+  return 'error';
+};
+
 const countSatellitesByGNSSSystem = (satelliteIds: string[]) => {
   const result: Record<string, number> = {};
 
@@ -77,6 +88,7 @@ const countSatellitesByGNSSSystem = (satelliteIds: string[]) => {
 };
 
 type Props = {
+  guardStatus: RTKGuardStatus | null;
   overallStatus: RTKCorrectionStatus;
   satelliteIds: string[];
   surveyStatus: {
@@ -88,6 +100,7 @@ type Props = {
 };
 
 const RTKStatusMiniList = ({
+  guardStatus,
   overallStatus,
   satelliteIds,
   surveyStatus,
@@ -103,6 +116,43 @@ const RTKStatusMiniList = ({
             primaryText={describeRTKStatus(overallStatus, {}, t)}
           />
         )}
+      {guardStatus && (
+        <>
+          <MiniListDivider />
+          <MiniListItem
+            iconPreset={getGuardIconPreset(guardStatus.primary.state)}
+            primaryText={t('RTKStatusMiniList.guardPrimary')}
+            secondaryText={t(
+              `RTKStatusMiniList.guardState.${guardStatus.primary.state}`
+            )}
+          />
+          <MiniListItem
+            iconPreset={getGuardIconPreset(guardStatus.backup.state)}
+            primaryText={t('RTKStatusMiniList.guardBackup')}
+            secondaryText={t(
+              `RTKStatusMiniList.guardState.${guardStatus.backup.state}`
+            )}
+          />
+          <MiniListItem
+            iconPreset={getGuardIconPreset(guardStatus.pair.state)}
+            primaryText={t('RTKStatusMiniList.guardPair')}
+            secondaryText={t(
+              `RTKStatusMiniList.guardState.${guardStatus.pair.state}`
+            )}
+          />
+          <MiniListItem
+            iconPreset={guardStatus.switch.armed ? 'success' : 'warning'}
+            primaryText={t('RTKStatusMiniList.guardFailover')}
+            secondaryText={
+              guardStatus.switch.mode === 'dry_run'
+                ? t('RTKStatusMiniList.guardDryRun')
+                : guardStatus.switch.armed
+                  ? t('RTKStatusMiniList.guardArmed')
+                  : t('RTKStatusMiniList.guardInhibited')
+            }
+          />
+        </>
+      )}
       {surveyStatus.supported && (
         <MiniListItem
           primaryText={
@@ -151,6 +201,7 @@ const RTKStatusMiniList = ({
 export default connect(
   // mapStateToProps
   (state: RootState) => ({
+    guardStatus: getRTKGuardStatus(state),
     overallStatus: getOverallRTKStatus(state),
     satelliteIds: getSatelliteIds(state),
     surveyStatus: getSurveyStatus(state),

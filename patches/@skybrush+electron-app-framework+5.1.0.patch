@@ -1,0 +1,45 @@
+diff --git a/node_modules/@skybrush/electron-app-framework/dist/app.js b/node_modules/@skybrush/electron-app-framework/dist/app.js
+index d3ce3a4..5b802e1 100644
+--- a/node_modules/@skybrush/electron-app-framework/dist/app.js
++++ b/node_modules/@skybrush/electron-app-framework/dist/app.js
+@@ -1,4 +1,5 @@
+-import { app, Menu, shell } from 'electron';
++import { shell } from 'electron/common';
++import { app, Menu } from 'electron/main';
+ import unhandled from 'electron-unhandled';
+ import process from 'process';
+ import createMainWindowFactory from './main-window.js';
+diff --git a/node_modules/@skybrush/electron-app-framework/dist/cli.js b/node_modules/@skybrush/electron-app-framework/dist/cli.js
+index b797362..1cd9ffc 100644
+--- a/node_modules/@skybrush/electron-app-framework/dist/cli.js
++++ b/node_modules/@skybrush/electron-app-framework/dist/cli.js
+@@ -1,5 +1,5 @@
+ import { program } from 'commander';
+-import { app } from 'electron';
++import { app } from 'electron/main';
+ import process from 'process';
+ /**
+  * Generic setup function for command line parsers of Electron applications
+diff --git a/node_modules/@skybrush/electron-app-framework/dist/main-window.js b/node_modules/@skybrush/electron-app-framework/dist/main-window.js
+index 7df14b2..372b784 100644
+--- a/node_modules/@skybrush/electron-app-framework/dist/main-window.js
++++ b/node_modules/@skybrush/electron-app-framework/dist/main-window.js
+@@ -1,4 +1,4 @@
+-import { BrowserWindow, } from 'electron';
++import { BrowserWindow, } from 'electron/main';
+ import windowStateKeeper from 'electron-window-state';
+ import { getUrlsFromRootDir } from './urls.js';
+ /**
+diff --git a/node_modules/@skybrush/electron-app-framework/dist/urls.js b/node_modules/@skybrush/electron-app-framework/dist/urls.js
+index 5c3acf3..74373d2 100644
+--- a/node_modules/@skybrush/electron-app-framework/dist/urls.js
++++ b/node_modules/@skybrush/electron-app-framework/dist/urls.js
+@@ -24,7 +24,7 @@ export function getDefaultMainWindowUrlFromRootDir(rootDir, indexPage = 'index.h
+ export function getDefaultPreloadUrlFromRootDir(rootDir) {
+     const candidates = usingWebpackDevServer
+         ? ['../preload/index.mjs', '../preload/index.js']
+-        : ['preload.bundle.js'];
++        : ['preload.bundle.mjs'];
+     for (const candidate of candidates) {
+         const fullPath = path.join(rootDir, candidate);
+         if (fs.existsSync(fullPath)) {

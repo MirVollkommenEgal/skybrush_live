@@ -11,12 +11,15 @@ import { noPayload } from '~/utils/redux';
 
 import {
   RTKAntennaPositionFormat,
+  type RTKGuardStatus,
   type RTKSavedCoordinate,
   type RTKStatistics,
 } from './types';
 
 type RTKSliceState = {
   stats: RTKStatistics;
+
+  guardStatus: RTKGuardStatus | null;
 
   /** Saved coordinates per RTK preset ID */
   savedCoordinates: Record<string, RTKSavedCoordinate[]>;
@@ -39,6 +42,7 @@ type RTKSliceState = {
 };
 
 const initialState: RTKSliceState = {
+  guardStatus: null,
   stats: {
     lastUpdatedAt: undefined,
     satellites: {},
@@ -135,6 +139,10 @@ const { actions, reducer } = createSlice({
       }
     },
 
+    updateRTKGuardStatus(state, action: PayloadAction<RTKGuardStatus | null>) {
+      state.guardStatus = action.payload;
+    },
+
     // Saved coordinates management
     saveCoordinateForPreset(
       state,
@@ -208,6 +216,7 @@ export const {
   showRTKSetupDialog,
   toggleSurveySettingsPanel,
   updateRTKStatistics,
+  updateRTKGuardStatus,
   _setCurrentRTKPresetIdAndTimestamp,
 } = actions;
 

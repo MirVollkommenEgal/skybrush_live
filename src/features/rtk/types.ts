@@ -124,3 +124,81 @@ export type RTKStatistics = {
 export type RTKStatisticsResponse = Omit<Response_RTKSTAT, 'messages_tx'> & {
   messagesTx: Response_RTKSTAT['messages_tx'];
 };
+
+export type RTKGuardSourceStatus = {
+  state: 'GOOD' | 'DEGRADED' | 'FAILED' | 'READY' | 'NOT_READY' | 'UNKNOWN';
+  reasons: string[];
+  msmAge: number | null;
+  satellites: number;
+  medianCnr: number | null;
+};
+
+export type RTKGuardStatus = {
+  active: string | null;
+  primary: RTKGuardSourceStatus;
+  backup: RTKGuardSourceStatus;
+  pair: {
+    state: 'CONSISTENT' | 'DISAGREE' | 'NOT_COMPARABLE';
+    reasons: string[];
+    commonSatellites: number;
+    commonSignals: number;
+    overlap: number;
+    phaseOutlierRatio: number | null;
+    recent: boolean;
+  };
+  switch: {
+    decision: 'ALLOWED' | 'INHIBITED';
+    allowed: boolean;
+    automatic: boolean;
+    armed: boolean;
+    reason: string;
+    state: string;
+    mode: 'dry_run' | 'active';
+  };
+};
+
+export type RTKGuardSourceConfiguration = {
+  preset_id?: string;
+  source?: string;
+  expected_ecef?: [number, number, number];
+};
+
+export type RTKGuardHealthConfiguration = {
+  degraded_msm_age?: number;
+  max_msm_age?: number;
+  max_position_age?: number;
+  maximum_position_error?: number;
+  maximum_position_jump?: number;
+  minimum_satellites?: number;
+  minimum_common_satellites?: number;
+  minimum_common_signals?: number;
+  required_constellations?: string[];
+  primary_failure_hold?: number;
+  backup_ready_hold?: number;
+  pair_recent_window?: number;
+  epoch_tolerance?: number;
+  maximum_phase_outlier_ratio?: number;
+  phase_mad_multiplier?: number;
+  phase_absolute_floor?: number;
+  pair_disagreement_hold?: number;
+  mass_cycle_slip_count?: number;
+  cycle_slip_window?: number;
+  minimum_cnr?: number;
+  cnr_collapse_delta?: number;
+  enable_phase_comparison?: boolean;
+};
+
+export type RTKGuardConfiguration = {
+  enabled?: boolean;
+  mode?: 'dry_run' | 'active';
+  primary?: RTKGuardSourceConfiguration;
+  backup?: RTKGuardSourceConfiguration;
+  health?: RTKGuardHealthConfiguration;
+  switching?: {
+    enabled?: boolean;
+    allow_auto_failback?: false;
+    confirmation_timeout?: number;
+  };
+  recording_directory?: string;
+  [key: string]: unknown;
+};

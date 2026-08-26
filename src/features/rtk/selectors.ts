@@ -22,6 +22,8 @@ const getAntennaInfo = (state: RootState) => state.rtk.stats.antenna;
 const getMessageInfo = (state: RootState) => state.rtk.stats.messages;
 const getSatelliteInfo = (state: RootState) => state.rtk.stats.satellites;
 
+export const getRTKGuardStatus = (state: RootState) => state.rtk.guardStatus;
+
 /**
  * Returns whether the antenna position should be shown in ECEF coordinates.
  */
